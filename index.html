@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atmospherics — Live Weather</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- Sky gradient backdrop -->
+  <div class="sky-backdrop" id="skyBackdrop"></div>
+
+  <div class="app-shell">
+
+    <!-- Header -->
+    <header class="site-header">
+      <div class="logo">
+        <span class="logo-mark">⬡</span>
+        <span class="logo-text">ATMOSPHERICS</span>
+      </div>
+      <div class="header-meta" id="headerMeta">
+        <span class="live-dot"></span> LIVE DATA
+      </div>
+    </header>
+
+    <!-- Search Zone -->
+    <section class="search-zone">
+      <div class="search-eyebrow">WHERE IN THE WORLD?</div>
+      <div class="search-bar-wrap">
+        <div class="search-bar" id="searchBar">
+          <span class="search-icon">◎</span>
+          <input
+            type="text"
+            id="cityInput"
+            class="search-input"
+            placeholder="City name, e.g. Tokyo"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button class="search-btn" id="searchBtn" aria-label="Search">
+            <span>SEARCH</span>
+            <span class="btn-arrow">→</span>
+          </button>
+        </div>
+        <div class="search-error hidden" id="searchError">
+          <span class="error-icon">⚠</span>
+          <span id="errorMsg">City not found. Check the spelling and try again.</span>
+        </div>
+      </div>
+
+      <!-- Recent searches -->
+      <div class="recent-searches hidden" id="recentSearches">
+        <span class="recent-label">RECENT:</span>
+        <div class="recent-tags" id="recentTags"></div>
+      </div>
+    </section>
+
+    <!-- Loading State -->
+    <div class="loading-state hidden" id="loadingState">
+      <div class="loader-ring"></div>
+      <p class="loader-text">Fetching atmospheric data…</p>
+    </div>
+
+    <!-- Main Dashboard -->
+    <main class="dashboard hidden" id="dashboard">
+
+      <!-- Location Banner -->
+      <div class="location-banner">
+        <div class="location-info">
+          <h1 class="city-name" id="cityName">—</h1>
+          <p class="location-sub" id="locationSub">—</p>
+        </div>
+        <div class="last-updated" id="lastUpdated">—</div>
+      </div>
+
+      <!-- Hero Temperature Strip -->
+      <div class="temp-strip">
+        <div class="condition-icon-wrap">
+          <div class="condition-icon" id="conditionIcon">☀</div>
+        </div>
+        <div class="temp-main">
+          <span class="temp-value" id="tempValue">—</span>
+          <span class="temp-unit">°C</span>
+        </div>
+        <div class="temp-meta">
+          <div class="temp-condition" id="tempCondition">—</div>
+          <div class="temp-range" id="tempRange">—</div>
+          <div class="unit-toggle">
+            <button class="unit-btn active" id="btnC" data-unit="C">°C</button>
+            <button class="unit-btn" id="btnF" data-unit="F">°F</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Atmosphere Bar -->
+      <div class="atmosphere-bar">
+        <div class="atm-item">
+          <span class="atm-icon">◈</span>
+          <span class="atm-label">FEELS LIKE</span>
+          <span class="atm-value" id="feelsLike">—</span>
+        </div>
+        <div class="atm-divider"></div>
+        <div class="atm-item">
+          <span class="atm-icon">◉</span>
+          <span class="atm-label">VISIBILITY</span>
+          <span class="atm-value" id="visibility">—</span>
+        </div>
+        <div class="atm-divider"></div>
+        <div class="atm-item">
+          <span class="atm-icon">◎</span>
+          <span class="atm-label">UV INDEX</span>
+          <span class="atm-value" id="uvIndex">—</span>
+        </div>
+        <div class="atm-divider"></div>
+        <div class="atm-item">
+          <span class="atm-icon">◐</span>
+          <span class="atm-label">CLOUD COVER</span>
+          <span class="atm-value" id="cloudCover">—</span>
+        </div>
+      </div>
+
+      <!-- Metric Cards Grid -->
+      <div class="metrics-grid">
+
+        <div class="metric-card card-humidity" data-tilt>
+          <div class="card-header">
+            <span class="card-icon">💧</span>
+            <span class="card-label">HUMIDITY</span>
+          </div>
+          <div class="card-value" id="humidity">—</div>
+          <div class="card-sub">Relative humidity</div>
+          <div class="gauge-bar">
+            <div class="gauge-fill" id="humidityGauge" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div class="metric-card card-wind" data-tilt>
+          <div class="card-header">
+            <span class="card-icon">🌬</span>
+            <span class="card-label">WIND</span>
+          </div>
+          <div class="card-value" id="windSpeed">—</div>
+          <div class="card-sub" id="windDirection">—</div>
+          <div class="wind-compass" id="windCompass">
+            <div class="compass-needle" id="compassNeedle"></div>
+          </div>
+        </div>
+
+        <div class="metric-card card-pressure" data-tilt>
+          <div class="card-header">
+            <span class="card-icon">⊕</span>
+            <span class="card-label">PRESSURE</span>
+          </div>
+          <div class="card-value" id="pressure">—</div>
+          <div class="card-sub" id="pressureTrend">—</div>
+          <div class="pressure-arc">
+            <svg viewBox="0 0 100 55" class="arc-svg">
+              <path d="M10,50 A40,40 0 0,1 90,50" stroke="#1E2D4E" stroke-width="6" fill="none" stroke-linecap="round"/>
+              <path d="M10,50 A40,40 0 0,1 90,50" stroke="#00D4FF" stroke-width="6" fill="none"
+                stroke-linecap="round" stroke-dasharray="126" id="pressureArc"
+                stroke-dashoffset="126" style="transition: stroke-dashoffset 1s ease"/>
+            </svg>
+            <div class="arc-label" id="pressureArcLabel">—</div>
+          </div>
+        </div>
+
+        <div class="metric-card card-sun" data-tilt>
+          <div class="card-header">
+            <span class="card-icon">☀</span>
+            <span class="card-label">SUN</span>
+          </div>
+          <div class="sun-times">
+            <div class="sun-item">
+              <div class="sun-icon rise">↑</div>
+              <div class="sun-time" id="sunrise">—</div>
+              <div class="sun-lbl">RISE</div>
+            </div>
+            <div class="sun-arc-visual">
+              <div class="sun-arc-track">
+                <div class="sun-position" id="sunPosition"></div>
+              </div>
+            </div>
+            <div class="sun-item">
+              <div class="sun-icon set">↓</div>
+              <div class="sun-time" id="sunset">—</div>
+              <div class="sun-lbl">SET</div>
+            </div>
+          </div>
+          <div class="card-sub" id="dayLength">—</div>
+        </div>
+
+        <div class="metric-card card-precip" data-tilt>
+          <div class="card-header">
+            <span class="card-icon">🌧</span>
+            <span class="card-label">PRECIPITATION</span>
+          </div>
+          <div class="card-value" id="precipitation">—</div>
+          <div class="card-sub">Last hour</div>
+          <div class="rain-bars" id="rainBars">
+            <div class="rain-bar"></div>
+            <div class="rain-bar"></div>
+            <div class="rain-bar"></div>
+            <div class="rain-bar"></div>
+            <div class="rain-bar"></div>
+            <div class="rain-bar"></div>
+          </div>
+        </div>
+
+        <div class="metric-card card-dew" data-tilt>
+          <div class="card-header">
+            <span class="card-icon">◌</span>
+            <span class="card-label">DEW POINT</span>
+          </div>
+          <div class="card-value" id="dewPoint">—</div>
+          <div class="card-sub" id="dewComfort">—</div>
+          <div class="comfort-scale">
+            <div class="comfort-track">
+              <div class="comfort-indicator" id="comfortIndicator"></div>
+            </div>
+            <div class="comfort-labels">
+              <span>DRY</span><span>COMFY</span><span>HUMID</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Data Source Footer -->
+      <div class="data-footer">
+        <span>Data via Open-Meteo API & Nominatim Geocoding</span>
+        <span>·</span>
+        <span>Updates every fetch</span>
+        <span>·</span>
+        <span id="coordsDisplay">—</span>
+      </div>
+
+    </main>
+
+    <!-- Welcome / Empty State -->
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">🌐</div>
+      <h2 class="empty-heading">Anywhere on Earth.</h2>
+      <p class="empty-body">Search a city to pull live atmospheric readings — temperature, humidity, wind, pressure, and more.</p>
+    </div>
+
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
